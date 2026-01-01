@@ -1,0 +1,18 @@
+---
+- name: Main Playbook - Software Installation and Configuration
+  hosts: all
+  gather_facts: yes
+
+  pre_tasks:
+    - name: Display play info
+      debug:
+        msg: "Starting main playbook on {{ inventory_hostname }}"
+
+  tasks:
+    - name: Include vim installation tasks
+      include_tasks: install_vim.yml
+
+  post_tasks:
+    - name: Display completion message
+      debug:
+        msg: "Main playbook completed on {{ inventory_hostname }}"

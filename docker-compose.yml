@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ansible-controller
+    image: sles15-ansible:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./ansible/playbooks:/home/ansible/playbooks
+      - ./ansible/inventory:/home/ansible/inventory
+      - ./ansible/roles:/home/ansible/roles
+      - ~/.ssh:/home/ansible/.ssh:ro
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=False
+      - PYTHONUNBUFFERED=1
+    networks:
+      - ansible-network
+
+  # Optional: Target host for testing
+  target:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: ansible-target
+    image: sles15-ansible:latest
+    stdin_open: true
+    tty: true
+    hostname: target
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - ansible-network
+    command: /bin/bash
+
+networks:
+  ansible-network:
+    driver: bridge

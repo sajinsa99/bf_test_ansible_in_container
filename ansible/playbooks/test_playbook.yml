@@ -1,0 +1,35 @@
+---
+- name: Test Ansible Playbook
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Display system information
+      debug:
+        msg: "System {{ inventory_hostname }} has OS {{ ansible_os_family }}"
+
+    - name: Check Python version
+      command: python3 --version
+      register: python_version
+      changed_when: false
+
+    - name: Display Python version
+      debug:
+        var: python_version.stdout
+
+    - name: List home directory
+      command: ls -la /home/ansible
+      register: home_contents
+      changed_when: false
+
+    - name: Display home contents
+      debug:
+        var: home_contents.stdout_lines
+
+    - name: Check Ansible version
+      command: ansible --version
+      register: ansible_version
+      changed_when: false
+
+    - name: Display Ansible version
+      debug:
+        var: ansible_version.stdout_lines
