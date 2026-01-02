@@ -6,7 +6,8 @@ RUN zypper refresh && \
     python3 \
     python3-pip \
     python3-devel \
-    gcc-11 \
+    gcc \
+    gcc-c++ \
     make \
     openssh \
     openssh-clients \
@@ -16,9 +17,8 @@ RUN zypper refresh && \
     sudo && \
     zypper clean -a
 
-# Set gcc-11 as default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100 && \
-    update-alternatives --install /usr/bin/cc cc /usr/bin/gcc-11 100
+# Upgrade pip and setuptools for better wheel building
+RUN pip3 install --upgrade pip setuptools wheel
 
 # Install Ansible via pip
 RUN pip3 install --upgrade pip && \
