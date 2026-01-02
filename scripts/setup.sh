@@ -10,11 +10,15 @@ echo "=========================================="
 echo ""
 
 # Run build script
-echo "[1/2] Building Docker image..."
+echo "[1/3] Building Docker image..."
 bash scripts/build.sh
 
 echo ""
-echo "[2/2] Starting containers..."
+echo "[2/3] Running ansible-lint..."
+docker-compose run --rm ansible ansible-lint ansible/playbooks/
+
+echo ""
+echo "[3/3] Starting containers..."
 bash scripts/run.sh
 
 echo ""
