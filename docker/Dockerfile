@@ -20,13 +20,12 @@ RUN zypper refresh && \
 # Upgrade pip and setuptools for better wheel building
 RUN pip3 install --upgrade pip setuptools wheel
 
-# Install Ansible via pip
-RUN pip3 install --upgrade pip && \
-    pip3 install ansible ansible-lint
-
-# Create ansible user
+# Create ansible user first
 RUN useradd -m -s /bin/bash ansible && \
     echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Install Ansible via pip
+RUN pip3 install ansible ansible-lint
 
 # Configure SSH for Ansible
 RUN mkdir -p /home/ansible/.ssh && \
