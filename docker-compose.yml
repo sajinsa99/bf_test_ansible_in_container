@@ -20,7 +20,6 @@ services:
     networks:
       - ansible-network
 
-  # Optional: Target host for testing
   target:
     build:
       context: .
@@ -30,6 +29,8 @@ services:
     stdin_open: true
     tty: true
     hostname: target
+    ports:
+      - "5901:5901"
     environment:
       - PYTHONUNBUFFERED=1
     networks:

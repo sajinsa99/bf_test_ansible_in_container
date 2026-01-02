@@ -1,0 +1,80 @@
+---
+- name: Install KDE Desktop Environment and VNC Server
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+    - name: Update package manager cache
+      become: yes
+      command: zypper refresh
+
+    - name: Install KDE Plasma desktop and dependencies
+      become: yes
+      zypper:
+        name:
+          - patterns-openSUSE-minimal_base
+          - patterns-openSUSE-x11
+          - patterns-openSUSE-x11_yast
+          - patterns-kde-kde_plasma
+          - xorg-x11-server
+          - tigervnc
+          - tigervnc-server
+          - xauth
+        state: present
+
+    - name: Install additional utilities
+      become: yes
+      zypper:
+        name:
+          - dbus
+          - fontconfig
+          - liberation-fonts
+          - dejavu-fonts
+        state: present
+
+    - name: Create VNC startup script
+      become: yes
+      copy:
+        content: |
+          #!/bin/bash
+          export DISPLAY=:1
+          export VNCDESKTOP=KDE
+          vncserver -geometry 1280x720 -depth 24 :1
+          exec startkde
+        dest: /usr/local/bin/start-kde-vnc.sh
+        mode: '0755'
+
+    - name: Create systemd service for VNC
+      become: yes
+      copy:
+        content: |
+          [Unit]
+          Description=VNC Server for KDE
+          After=network.target
+
+          [Service]
+          Type=simple
+          User=ansible
+          ExecStart=/usr/local/bin/start-kde-vnc.sh
+          Restart=on-failure
+          RestartSec=10
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/vnc-kde.service
+
+    - name: Enable and start VNC service
+      become: yes
+      systemd:
+        daemon_reload: yes
+        name: vnc-kde
+        enabled: yes
+        state: started
+
+    - name: Display VNC connection info
+      debug:
+        msg:
+          - "KDE Desktop Environment installed successfully!"
+          - "VNC Server is running on port 5901"
+          - "Connect with: vnc://localhost:5901"
+          - "Password: Set in ~/.vnc/passwd on the container"

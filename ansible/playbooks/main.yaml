@@ -12,6 +12,9 @@
     - name: Include vim installation tasks
       include_tasks: install_vim.yml
 
+    - name: Include KDE desktop installation
+      include_tasks: install_kde.yml
+
   post_tasks:
     - name: Display completion message
       debug:
