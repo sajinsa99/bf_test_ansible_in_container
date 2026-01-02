@@ -21,7 +21,8 @@ RUN zypper refresh && \
 RUN pip3 install --upgrade pip setuptools wheel
 
 # Create ansible user first
-RUN useradd -m -s /bin/bash ansible && \
+RUN groupadd -r ansible && \
+    useradd -m -s /bin/bash -g ansible ansible && \
     echo "ansible ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Install Ansible via pip
