@@ -1,4 +1,4 @@
-FROM opensuse/leap:15.7
+FROM opensuse/leap:15.5
 
 # Install required packages
 RUN zypper refresh && \
