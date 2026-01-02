@@ -1,4 +1,4 @@
-FROM registry.suse.com/suse/sles15:15.7
+FROM opensuse/leap:15.7
 
 # Install required packages
 RUN zypper refresh && \
