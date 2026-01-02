@@ -1,5 +1,5 @@
 ---
-- name: Install KDE Desktop Environment and VNC Server
+- name: Install KDE Desktop Environment and RDP Server
   hosts: all
   gather_facts: yes
 
@@ -17,9 +17,9 @@
           - patterns-openSUSE-x11_yast
           - patterns-kde-kde_plasma
           - xorg-x11-server
-          - tigervnc
-          - tigervnc-server
+          - xrdp
           - xauth
+          - xorgxrdp
         state: present
 
     - name: Install additional utilities
@@ -32,49 +32,39 @@
           - dejavu-fonts
         state: present
 
-    - name: Create VNC startup script
+    - name: Configure xrdp to use KDE
       become: yes
-      copy:
-        content: |
-          #!/bin/bash
-          export DISPLAY=:1
-          export VNCDESKTOP=KDE
-          vncserver -geometry 1280x720 -depth 24 :1
-          exec startkde
-        dest: /usr/local/bin/start-kde-vnc.sh
-        mode: '0755'
+      lineinfile:
+        path: /etc/xrdp/startwm.sh
+        line: "exec /usr/bin/startplasma-x11"
+        insertbefore: "^exit 1"
 
-    - name: Create systemd service for VNC
-      become: yes
-      copy:
-        content: |
-          [Unit]
-          Description=VNC Server for KDE
-          After=network.target
-
-          [Service]
-          Type=simple
-          User=ansible
-          ExecStart=/usr/local/bin/start-kde-vnc.sh
-          Restart=on-failure
-          RestartSec=10
-
-          [Install]
-          WantedBy=multi-user.target
-        dest: /etc/systemd/system/vnc-kde.service
-
-    - name: Enable and start VNC service
+    - name: Enable xrdp service
       become: yes
       systemd:
-        daemon_reload: yes
-        name: vnc-kde
+        name: xrdp
         enabled: yes
         state: started
 
-    - name: Display VNC connection info
+    - name: Enable xrdp socket
+      become: yes
+      systemd:
+        name: xrdp-sesman
+        enabled: yes
+        state: started
+
+    - name: Create xrdp session directory for ansible user
+      become: yes
+      shell: |
+        mkdir -p /home/ansible/.local/share/xrdp
+        chown -R ansible:ansible /home/ansible/.local
+
+    - name: Display RDP connection info
       debug:
         msg:
           - "KDE Desktop Environment installed successfully!"
-          - "VNC Server is running on port 5901"
-          - "Connect with: vnc://localhost:5901"
-          - "Password: Set in ~/.vnc/passwd on the container"
+          - "RDP Server is running on port 3389"
+          - "Connect with Remote Desktop app:"
+          - "  Address: localhost:3389"
+          - "  Username: ansible"
+          - "  Password: (set as needed)"

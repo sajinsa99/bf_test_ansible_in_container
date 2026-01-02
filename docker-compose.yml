@@ -30,7 +30,7 @@ services:
     tty: true
     hostname: target
     ports:
-      - "5901:5901"
+      - "3389:3389"
     environment:
       - PYTHONUNBUFFERED=1
     networks:
