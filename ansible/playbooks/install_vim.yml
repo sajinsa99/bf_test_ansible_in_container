@@ -1,30 +1,27 @@
 ---
-- name: Install Vim
-  hosts: all
+- name: Update package manager cache
+  zypper:
+    name: ""
+    state: present
+  register: cache_update
   become: yes
-  gather_facts: yes
-  tasks:
-    - name: Update package manager cache
-      zypper:
-        name: ""
-        state: present
-      register: cache_update
 
-    - name: Install vim
-      zypper:
-        name: vim
-        state: present
-      register: vim_install
+- name: Install vim
+  zypper:
+    name: vim
+    state: present
+  register: vim_install
+  become: yes
 
-    - name: Display vim installation status
-      debug:
-        msg: "Vim installation status: {{ 'Success' if vim_install is changed else 'Already installed' }}"
+- name: Display vim installation status
+  debug:
+    msg: "Vim installation status: {{ 'Success' if vim_install is changed else 'Already installed' }}"
 
-    - name: Get vim version
-      command: vim --version
-      register: vim_version
-      changed_when: false
+- name: Get vim version
+  command: vim --version
+  register: vim_version
+  changed_when: false
 
-    - name: Display vim version
-      debug:
-        var: vim_version.stdout_lines[0]
+- name: Display vim version
+  debug:
+    var: vim_version.stdout_lines[0]

@@ -1,70 +1,59 @@
 ---
-- name: Install KDE Desktop Environment and RDP Server
-  hosts: all
-  gather_facts: yes
+- name: Update package manager cache
+  become: yes
+  command: zypper refresh
 
-  tasks:
-    - name: Update package manager cache
-      become: yes
-      command: zypper refresh
+- name: Install KDE Plasma desktop and dependencies
+  become: yes
+  zypper:
+    name:
+      - patterns-kde-kde_plasma
+      - xorg-x11-server
+      - xrdp
+      - xauth
+      - xorgxrdp
+    state: present
 
-    - name: Install KDE Plasma desktop and dependencies
-      become: yes
-      zypper:
-        name:
-          - patterns-openSUSE-minimal_base
-          - patterns-openSUSE-x11
-          - patterns-openSUSE-x11_yast
-          - patterns-kde-kde_plasma
-          - xorg-x11-server
-          - xrdp
-          - xauth
-          - xorgxrdp
-        state: present
+- name: Install additional utilities
+  become: yes
+  zypper:
+    name:
+      - fontconfig
+    state: present
 
-    - name: Install additional utilities
-      become: yes
-      zypper:
-        name:
-          - dbus
-          - fontconfig
-          - liberation-fonts
-          - dejavu-fonts
-        state: present
+- name: Configure xrdp to use KDE
+  become: yes
+  lineinfile:
+    path: /etc/xrdp/startwm.sh
+    line: "exec /usr/bin/startplasma-x11"
+    insertbefore: "^exit 1"
 
-    - name: Configure xrdp to use KDE
-      become: yes
-      lineinfile:
-        path: /etc/xrdp/startwm.sh
-        line: "exec /usr/bin/startplasma-x11"
-        insertbefore: "^exit 1"
+- name: Enable xrdp service
+  become: yes
+  systemd:
+    name: xrdp
+    enabled: yes
+    state: started
 
-    - name: Enable xrdp service
-      become: yes
-      systemd:
-        name: xrdp
-        enabled: yes
-        state: started
+- name: Enable xrdp socket
+  become: yes
+  systemd:
+    name: xrdp-sesman
+    enabled: yes
+    state: started
 
-    - name: Enable xrdp socket
-      become: yes
-      systemd:
-        name: xrdp-sesman
-        enabled: yes
-        state: started
+- name: Create xrdp session directory for ansible user
+  become: yes
+  shell: |
+    mkdir -p /home/ansible/.local/share/xrdp
+    chown -R ansible:ansible /home/ansible/.local
 
-    - name: Create xrdp session directory for ansible user
-      become: yes
-      shell: |
-        mkdir -p /home/ansible/.local/share/xrdp
-        chown -R ansible:ansible /home/ansible/.local
-
-    - name: Display RDP connection info
-      debug:
-        msg:
-          - "KDE Desktop Environment installed successfully!"
-          - "RDP Server is running on port 3389"
-          - "Connect with Remote Desktop app:"
-          - "  Address: localhost:3389"
-          - "  Username: ansible"
-          - "  Password: (set as needed)"
+- name: Display RDP connection info
+  debug:
+    msg:
+      - "KDE Desktop Environment installed successfully!"
+      - "RDP Server is running on port 3389"
+      - "Connect with Remote Desktop app:"
+      - "  Address: localhost:3389"
+      - "  Username: ansible"
+      - "  Password: (set as needed)"
